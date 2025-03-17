@@ -1,0 +1,4 @@
+spring.application.name=rubalv
+spring.datasource.url=jdbc:postgresql://db:5432/bnpl_db
+spring.datasource.username=admin
+spring.datasource.password=admin123
