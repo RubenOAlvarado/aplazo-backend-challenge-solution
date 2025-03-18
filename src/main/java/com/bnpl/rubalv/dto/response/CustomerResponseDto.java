@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCustomerResponseDto {
+public class CustomerResponseDto {
     private UUID id;
     private BigDecimal creditLineAmount;
     private BigDecimal availableCreditLineAmount;

@@ -1,7 +1,5 @@
-package com.bnpl.rubalv.model.enums;
+package com.bnpl.rubalv.enums;
 
 public enum InstallmentStatus {
-    NEXT,
-    PENDING,
-    ERROR
+    PENDING, NEXT, ERROR
 }

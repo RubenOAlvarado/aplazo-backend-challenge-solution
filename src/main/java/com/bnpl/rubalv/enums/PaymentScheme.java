@@ -1,11 +1,13 @@
-package com.bnpl.rubalv.model.enums;
+package com.bnpl.rubalv.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
+
 @Getter
+@AllArgsConstructor
 public enum PaymentScheme {
     SCHEME_1(5, new BigDecimal("0.13")),
     SCHEME_2(5, new BigDecimal("0.16"));

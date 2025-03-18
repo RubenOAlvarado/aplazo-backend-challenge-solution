@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerRequestDto {
+public class CreateCustomerRequestDto {
     @NotBlank
     private String firstName;
 
