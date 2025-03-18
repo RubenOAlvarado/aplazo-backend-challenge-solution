@@ -8,13 +8,13 @@ import com.bnpl.rubalv.model.Installment;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Component
 public class LoanMapper {
-    public LoanResponseDto toResponseDto(UUID id, UUID customerId, LoanStatus status, OffsetDateTime createdAt, BigDecimal commissionAmount, List<Installment> installments){
+    public LoanResponseDto toResponseDto(UUID id, UUID customerId, LoanStatus status, Instant createdAt, BigDecimal commissionAmount, List<Installment> installments){
         LoanResponseDto responseDto = new LoanResponseDto();
         responseDto.setId(id);
         responseDto.setCustomerId(customerId);

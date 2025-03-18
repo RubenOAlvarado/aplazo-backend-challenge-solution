@@ -53,12 +53,12 @@ public class LoanServiceImpl implements LoanService {
         }
 
         try{
-            validatePurchaseAmount(loanRequest.getPurchaseAmount(), clientsCreditLine);
+            validatePurchaseAmount(loanRequest.getAmount(), clientsCreditLine);
         }catch(InsufficientCreditException ex){
             log.warn(
                     "Loan amount exceeds available credit. Customer: {}, Amount: {}, Available: {}",
                     loanRequest.getCustomerId(),
-                    loanRequest.getPurchaseAmount(),
+                    loanRequest.getAmount(),
                     clientsCreditLine.getAvailableCreditAmount()
                     );
             throw ex;
@@ -67,19 +67,19 @@ public class LoanServiceImpl implements LoanService {
         PaymentScheme scheme = paymentSchemeStrategy.determinePaymentSchema(customer);
 
         Loan loan = buildLoanEntity(loanRequest, clientsCreditLine, scheme);
-        calculateLoanDetails(loan, loanRequest.getPurchaseAmount(), scheme);
+        calculateLoanDetails(loan, loanRequest.getAmount(), scheme);
         Loan savedLoan = loanRepository.save(loan);
 
-        creditLineService.updateCreditLine(clientsCreditLine, loanRequest.getPurchaseAmount());
+        creditLineService.updateCreditLine(clientsCreditLine, loanRequest.getAmount());
 
-        return loanMapper.toResponseDto(savedLoan.getId(), loanRequest.getCustomerId(), savedLoan.getStatus(), savedLoan.getCreatedAt(), savedLoan.getCommissionAmount(), savedLoan.getInstallments());
+        return loanMapper.toResponseDto(savedLoan.getId(), loanRequest.getCustomerId(), savedLoan.getStatus(), savedLoan.getCreatedAt().toInstant(), savedLoan.getCommissionAmount(), savedLoan.getInstallments());
     }
 
     @Override
     public LoanResponseDto getLoanById(UUID id){
         return loanRepository.findById(id)
                 .map(loan ->
-                        loanMapper.toResponseDto(loan.getId(), loan.getCreditLine().getCustomer().getId(), loan.getStatus(), loan.getCreatedAt(), loan.getCommissionAmount(), loan.getInstallments())
+                        loanMapper.toResponseDto(loan.getId(), loan.getCreditLine().getCustomer().getId(), loan.getStatus(), loan.getCreatedAt().toInstant(), loan.getCommissionAmount(), loan.getInstallments())
                 ).orElseThrow(() -> new LoanNotFoundException(id));
     }
 
@@ -99,22 +99,16 @@ public class LoanServiceImpl implements LoanService {
                 loan, installmentAmount, dateHelper.generatePaymentSchedule(LocalDate.now(), scheme)
         );
 
-        LoanCalculation loanCalculation = new LoanCalculation(
-                commission,
-                totalAmount,
-                installmentAmount,
-                installments
-        );
-        log.info("Loan successfully calculated: {}", loanCalculation.totalAmount());
-        loan.setInstallments(loanCalculation.installments());
-        loan.setCommissionAmount(loanCalculation.commission());
-        loan.setTotalAmount(loanCalculation.totalAmount());
+        log.info("Loan successfully calculated: {}", totalAmount);
+        loan.setInstallments(installments);
+        loan.setCommissionAmount(commission);
+        loan.setTotalAmount(totalAmount);
     }
 
     private Loan buildLoanEntity(LoanRequestDto request, CreditLine creditLine, PaymentScheme scheme){
         return Loan.builder()
                 .creditLine(creditLine)
-                .amount(request.getPurchaseAmount())
+                .amount(request.getAmount())
                 .status(LoanStatus.ACTIVE)
                 .paymentScheme(scheme)
                 .interestRate(scheme.getInterestRate())
@@ -122,11 +116,4 @@ public class LoanServiceImpl implements LoanService {
                 .installments(new ArrayList<>())
                 .build();
     }
-
-    private record LoanCalculation(
-            BigDecimal commission,
-            BigDecimal totalAmount,
-            BigDecimal installmentAmount,
-            List<Installment> installments
-    ){}
 }

@@ -21,5 +21,5 @@ public class LoanRequestDto {
     @Schema(description = "Requested loan amount", minimum = "0", exclusiveMinimum = true)
     @NotNull
     @Positive
-    private BigDecimal purchaseAmount;
+    private BigDecimal amount;
 }

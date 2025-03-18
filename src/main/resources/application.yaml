@@ -2,7 +2,7 @@ spring:
   application:
     name: rubalv
   datasource:
-    url: jdbc:postgresql://localhost:5432/bnpl_db
+    url: jdbc:postgresql://db:5432/bnpl_db
     username: admin
     password: admin123
     driver-class-name: org.postgresql.Driver
@@ -25,3 +25,6 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+jwt:
+  secret: bZE9a4hL8m7VqKpXwRtSvY3u6x/AfTjWnOi1cJyN5d0=
+  expiration: 86400

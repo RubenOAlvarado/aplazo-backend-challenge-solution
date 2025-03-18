@@ -3,6 +3,7 @@ package com.bnpl.rubalv.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +25,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtTokenServiceImpl implements JwtTokenService{
-    @Value("${jwt.secret:defaultSecretKey}")
-    private String secret;
+    @Value("${jwt.secret}")
+    private String base64Secret;
 
     @Value("${jwt.expiration:86400}")
     private long expiration;
 
     private SecretKey getSigningKey(){
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        byte[] keyBytes = Decoders.BASE64.decode(base64Secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     @Override
