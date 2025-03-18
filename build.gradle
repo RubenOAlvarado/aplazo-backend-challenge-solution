@@ -42,7 +42,7 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.testcontainers:junit-jupiter'
 	testImplementation 'org.testcontainers:postgresql'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'io.rest-assured:rest-assured'
 
 	def mapStructVersion = '1.6.3'
 	implementation "org.mapstruct:mapstruct:${mapStructVersion}"

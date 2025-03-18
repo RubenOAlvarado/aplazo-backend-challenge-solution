@@ -2,7 +2,7 @@ spring:
   application:
     name: rubalv
   datasource:
-    url: jdbc:postgresql://db:5432/bnpl_db
+    url: jdbc:postgresql://localhost:5432/bnpl_db
     username: admin
     password: admin123
     driver-class-name: org.postgresql.Driver
@@ -21,7 +21,7 @@ spring:
     baseline-on-migrate: true
     connect-retries: 5
   profiles:
-    active: local
+    active: test
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
