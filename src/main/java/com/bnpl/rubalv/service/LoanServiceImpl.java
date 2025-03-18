@@ -5,7 +5,9 @@ import com.bnpl.rubalv.dto.response.LoanResponseDto;
 import com.bnpl.rubalv.enums.LoanStatus;
 import com.bnpl.rubalv.enums.PaymentScheme;
 import com.bnpl.rubalv.exception.BussinessException;
+import com.bnpl.rubalv.exception.ClientWithoutCreditLineException;
 import com.bnpl.rubalv.exception.InsufficientCreditException;
+import com.bnpl.rubalv.exception.LoanNotFoundException;
 import com.bnpl.rubalv.mapper.LoanMapper;
 import com.bnpl.rubalv.model.CreditLine;
 import com.bnpl.rubalv.model.Customer;
@@ -47,7 +49,7 @@ public class LoanServiceImpl implements LoanService {
         CreditLine clientsCreditLine = creditLineService.getCustomerCreditLine(customer);
         if(clientsCreditLine == null){
             log.error("Customer {} does not have an active credit line", loanRequest.getCustomerId());
-            throw new BussinessException("Client does not have an active credit line");
+            throw new ClientWithoutCreditLineException("Client does not have an active credit line");
         }
 
         try{
@@ -78,7 +80,7 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.findById(id)
                 .map(loan ->
                         loanMapper.toResponseDto(loan.getId(), loan.getCreditLine().getCustomer().getId(), loan.getStatus(), loan.getCreatedAt(), loan.getCommissionAmount(), loan.getInstallments())
-                ).orElseThrow(() -> new EntityNotFoundException("Loan with id "+id+" not found."));
+                ).orElseThrow(() -> new LoanNotFoundException(id));
     }
 
     private void validatePurchaseAmount(BigDecimal amount, CreditLine creditLine){

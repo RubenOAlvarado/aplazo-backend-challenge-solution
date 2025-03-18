@@ -1,15 +1,15 @@
 package com.bnpl.rubalv.service;
 
 import com.bnpl.rubalv.dto.request.CreateCustomerRequestDto;
+import com.bnpl.rubalv.dto.response.CustomerRegistrationResult;
 import com.bnpl.rubalv.dto.response.CustomerResponseDto;
+import com.bnpl.rubalv.exception.CustomerNotFoundException;
 import com.bnpl.rubalv.mapper.CustomerMapper;
 import com.bnpl.rubalv.model.CreditLine;
 import com.bnpl.rubalv.model.Customer;
 import com.bnpl.rubalv.repository.CustomerRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +23,11 @@ public class CustomerServiceImpl implements CustomerService{
     private final CustomerRepository customerRepository;
     private final CreditLineService creditLineService;
     private final CustomerMapper customerMapper;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     @Transactional
-    public CustomerResponseDto registerCustomer(CreateCustomerRequestDto customerRequest){
+    public CustomerRegistrationResult registerCustomer(CreateCustomerRequestDto customerRequest){
         log.info("Start customer registration for customer: {}", customerRequest.getFirstName());
         Customer customerEntity = customerMapper.toEntity(customerRequest);
         Customer savedCustomer = customerRepository.save(customerEntity);
@@ -39,8 +40,11 @@ public class CustomerServiceImpl implements CustomerService{
             throw e;
         }
 
-        log.info("Customer and his credit line successfully created.");
-        return customerMapper.mapToCustomerResponseDto(savedCustomer, Optional.of(clientCreditLine));
+        log.info("Customer and his credit line successfully created. Creating JWT");
+        String token = jwtTokenService.generateToken(savedCustomer.getId());
+        CustomerResponseDto customerResponseDto = customerMapper.mapToCustomerResponseDto(savedCustomer, Optional.of(clientCreditLine));
+
+        return new CustomerRegistrationResult(customerResponseDto, token);
     }
 
     @Override
@@ -49,10 +53,10 @@ public class CustomerServiceImpl implements CustomerService{
                     Optional<CreditLine> creditLine = Optional.ofNullable(creditLineService.getCustomerCreditLine(customer));
                     return customerMapper.mapToCustomerResponseDto(customer, creditLine);
                 })
-                .orElseThrow(() -> new EntityNotFoundException("Customer with id "+id+" not found"));
+                .orElseThrow(() -> new CustomerNotFoundException(id));
     }
 
     public Customer findCustomerById(UUID id){
-        return customerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Customer with id "+id+" not found."));
+        return customerRepository.findById(id).orElseThrow(() -> new CustomerNotFoundException(id));
     }
 }
