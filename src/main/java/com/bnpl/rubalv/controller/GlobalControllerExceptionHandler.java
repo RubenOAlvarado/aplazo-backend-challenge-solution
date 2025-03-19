@@ -1,9 +1,6 @@
 package com.bnpl.rubalv.controller;
 
-import com.bnpl.rubalv.exception.ClientWithoutCreditLineException;
-import com.bnpl.rubalv.exception.ErrorResponse;
-import com.bnpl.rubalv.exception.InsufficientCreditException;
-import com.bnpl.rubalv.exception.TooManyRequestsException;
+import com.bnpl.rubalv.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
@@ -67,18 +64,30 @@ public class GlobalControllerExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler(CustomerNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
-        log.error("Entity not found: {}", ex.getMessage(), ex);
+    public ErrorResponse handleCustomerNotFound(CustomerNotFoundException ex, WebRequest request) {
+        log.error("Customer not found: {}", ex.getMessage(), ex);
 
         String errorCode = "APZ000005";
         String errorType = "CUSTOMER_NOT_FOUND";
 
-        if (request.getDescription(false).contains("/loans/")) {
-            errorCode = "APZ000008";
-            errorType = "LOAN_NOT_FOUND";
-        }
+        return ErrorResponse.builder()
+                .code(errorCode)
+                .error(errorType)
+                .message(ex.getMessage())
+                .timestamp(Instant.now().getEpochSecond())
+                .path(getRequestPath(request))
+                .build();
+    }
+
+    @ExceptionHandler(LoanNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleLoanNotFound(LoanNotFoundException ex, WebRequest request) {
+        log.error("Loan not found: {}", ex.getMessage(), ex);
+
+        String errorCode = "APZ000008";
+        String errorType = "LOAN_NOT_FOUND";
 
         return ErrorResponse.builder()
                 .code(errorCode)

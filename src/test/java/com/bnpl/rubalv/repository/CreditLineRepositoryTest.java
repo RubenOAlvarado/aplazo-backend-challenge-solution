@@ -1,6 +1,36 @@
 package com.bnpl.rubalv.repository;
 
-public class CreditLineRepository {
+import com.bnpl.rubalv.enums.CreditLineStatus;
+import com.bnpl.rubalv.model.CreditLine;
+import com.bnpl.rubalv.model.Customer;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+@Testcontainers
+@ActiveProfiles("test")
+public class CreditLineRepositoryTest {
+
+    @Autowired
+    private CreditLineRepository creditLineRepository;
+
+    @Autowired
+    private TestEntityManager entityManager;
+
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
             .withDatabaseName("testdb")
@@ -14,126 +44,83 @@ public class CreditLineRepository {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
-    @Autowired
-    private CreditLineRepository creditLineRepository;
+    @Test
+    void findActiveByCustomer_WhenActiveCreditLineExists_ReturnsActiveStatusCreditLine() {
+        Customer customer = Customer.builder()
+                .firstName("Juan")
+                .lastName("Pérez")
+                .secondLastName("Gómez")
+                .dateOfBirth(LocalDate.of(1985, 5, 15))
+                .build();
+        entityManager.persistAndFlush(customer);
 
-    @Autowired
-    private CustomerRepository customerRepository;
+        CreditLine activeCreditLine = CreditLine.builder()
+                .customer(customer)
+                .totalCreditAmount(new BigDecimal("10000.00"))
+                .availableCreditAmount(new BigDecimal("5000.00"))
+                .status(CreditLineStatus.ACTIVE)
+                .build();
+        entityManager.persistAndFlush(activeCreditLine);
 
-    private Customer customer;
-    private CreditLine activeCreditLine;
-    private CreditLine inactiveCreditLine;
+        Optional<CreditLine> result = creditLineRepository.findByCustomerAndStatusEquals(customer, CreditLineStatus.ACTIVE);
 
-    @BeforeEach
-    void setUp() {
-        creditLineRepository.deleteAll();
-        customerRepository.deleteAll();
-
-        // Create test customer
-        customer = new Customer();
-        customer.setFirstName("Test");
-        customer.setLastName("User");
-        customer.setSecondLastName("Repository");
-        customer.setDateOfBirth(LocalDate.now().minusYears(30));
-        customer = customerRepository.save(customer);
-
-        // Create active credit line
-        activeCreditLine = new CreditLine();
-        activeCreditLine.setCustomer(customer);
-        activeCreditLine.setTotalAmount(new BigDecimal("5000.00"));
-        activeCreditLine.setAvailableAmount(new BigDecimal("5000.00"));
-        activeCreditLine.setActive(true);
-        activeCreditLine.setCreatedAt(LocalDateTime.now());
-        activeCreditLine = creditLineRepository.save(activeCreditLine);
-
-        // Create inactive credit line
-        inactiveCreditLine = new CreditLine();
-        inactiveCreditLine.setCustomer(customer);
-        inactiveCreditLine.setTotalAmount(new BigDecimal("2000.00"));
-        inactiveCreditLine.setAvailableAmount(new BigDecimal("0.00"));
-        inactiveCreditLine.setActive(false);
-        inactiveCreditLine.setCreatedAt(LocalDateTime.now().minusDays(30));
-        inactiveCreditLine = creditLineRepository.save(inactiveCreditLine);
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(activeCreditLine.getId());
+        assertThat(result.get().getStatus()).isEqualTo(CreditLineStatus.ACTIVE);
     }
 
     @Test
-    void shouldFindActiveByCustomer() {
-        // Act
-        Optional<CreditLine> result = creditLineRepository.findActiveByCustomer(customer);
+    void findActiveByCustomer_WhenMultipleCreditLines_ReturnsOnlyActiveStatus() {
+        Customer customer = Customer.builder()
+                .firstName("Luis")
+                .lastName("Guzman")
+                .secondLastName("Gómez")
+                .dateOfBirth(LocalDate.of(1986, 6, 16))
+                .build();
+        entityManager.persistAndFlush(customer);
 
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals(activeCreditLine.getId(), result.get().getId());
-        assertEquals(new BigDecimal("5000.00"), result.get().getTotalAmount());
-        assertTrue(result.get().isActive());
+        CreditLine active = CreditLine.builder()
+                .customer(customer)
+                .totalCreditAmount(new BigDecimal("20000.00"))
+                .availableCreditAmount(new BigDecimal("10000.00"))
+                .status(CreditLineStatus.ACTIVE)
+                .build();
+        entityManager.persistAndFlush(active);
+
+        CreditLine inactive = CreditLine.builder()
+                .customer(customer)
+                .totalCreditAmount(new BigDecimal("5000.00"))
+                .availableCreditAmount(BigDecimal.ZERO)
+                .status(CreditLineStatus.CLOSED)
+                .build();
+        entityManager.persistAndFlush(inactive);
+
+        Optional<CreditLine> result = creditLineRepository.findByCustomerAndStatusEquals(customer, CreditLineStatus.ACTIVE);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(active.getId());
     }
 
     @Test
-    void shouldNotFindActiveWhenCustomerHasNoActiveCreditLine() {
-        // Arrange
-        activeCreditLine.setActive(false);
-        creditLineRepository.save(activeCreditLine);
+    void findActiveByCustomer_WhenNoActiveStatusCreditLine_ReturnsEmpty() {
+        Customer customer = Customer.builder()
+                .firstName("Luis")
+                .lastName("Gatica")
+                .secondLastName("Gómez")
+                .dateOfBirth(LocalDate.of(1988, 8, 18))
+                .build();
+        entityManager.persistAndFlush(customer);
 
-        // Act
-        Optional<CreditLine> result = creditLineRepository.findActiveByCustomer(customer);
+        CreditLine inactive = CreditLine.builder()
+                .customer(customer)
+                .totalCreditAmount(new BigDecimal("3000.00"))
+                .availableCreditAmount(BigDecimal.ZERO)
+                .status(CreditLineStatus.SUSPENDED)
+                .build();
+        entityManager.persistAndFlush(inactive);
 
-        // Assert
-        assertFalse(result.isPresent());
-    }
+        Optional<CreditLine> result = creditLineRepository.findByCustomerAndStatusEquals(customer, CreditLineStatus.ACTIVE);
 
-    @Test
-    void shouldNotFindActiveWhenCustomerDoesNotExist() {
-        // Arrange
-        Customer nonExistentCustomer = new Customer();
-        nonExistentCustomer.setId(UUID.randomUUID());
-        nonExistentCustomer.setFirstName("Non");
-        nonExistentCustomer.setLastName("Existent");
-
-        // Act
-        Optional<CreditLine> result = creditLineRepository.findActiveByCustomer(nonExistentCustomer);
-
-        // Assert
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void shouldFindActiveCreditLineAmongMultipleCreditLines() {
-        // Arrange
-        CreditLine secondActiveCreditLine = new CreditLine();
-        secondActiveCreditLine.setCustomer(customer);
-        secondActiveCreditLine.setTotalAmount(new BigDecimal("10000.00"));
-        secondActiveCreditLine.setAvailableAmount(new BigDecimal("7500.00"));
-        secondActiveCreditLine.setActive(true);
-        secondActiveCreditLine.setCreatedAt(LocalDateTime.now().plusDays(1)); // More recent
-        creditLineRepository.save(secondActiveCreditLine);
-
-        // Act
-        Optional<CreditLine> result = creditLineRepository.findActiveByCustomer(customer);
-
-        // Assert
-        assertTrue(result.isPresent());
-
-        // Note: If you expect to return the most recent one, uncomment below:
-        // assertEquals(secondActiveCreditLine.getId(), result.get().getId());
-
-        // If you just expect any active credit line, use this:
-        assertTrue(result.get().isActive());
-        assertThat(result.get().getId()).isIn(activeCreditLine.getId(), secondActiveCreditLine.getId());
-    }
-
-    @Test
-    void shouldReturnEmptyForDifferentCustomer() {
-        // Arrange
-        Customer anotherCustomer = new Customer();
-        anotherCustomer.setFirstName("Another");
-        anotherCustomer.setLastName("User");
-        anotherCustomer.setDateOfBirth(LocalDate.now().minusYears(25));
-        anotherCustomer = customerRepository.save(anotherCustomer);
-
-        // Act
-        Optional<CreditLine> result = creditLineRepository.findActiveByCustomer(anotherCustomer);
-
-        // Assert
-        assertFalse(result.isPresent());
+        assertThat(result).isEmpty();
     }
 }

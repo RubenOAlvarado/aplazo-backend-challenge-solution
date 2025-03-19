@@ -42,7 +42,7 @@ public class CreditLineServiceImpl implements CreditLineService {
     @Override
     public CreditLine getCustomerCreditLine(Customer customer){
         log.debug("Searching credit line with active status for customer: {}", customer.getId());
-        Optional<CreditLine> creditLine = creditLineRepository.findActiveByCustomer(customer);
+        Optional<CreditLine> creditLine = creditLineRepository.findByCustomerAndStatusEquals(customer, CreditLineStatus.ACTIVE);
 
         creditLine.ifPresentOrElse(
                 cl -> log.debug("Credit line found: {}", cl.getId()),

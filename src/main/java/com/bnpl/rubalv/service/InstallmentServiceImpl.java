@@ -3,7 +3,6 @@ package com.bnpl.rubalv.service;
 import com.bnpl.rubalv.enums.InstallmentStatus;
 import com.bnpl.rubalv.model.Installment;
 import com.bnpl.rubalv.model.Loan;
-import com.bnpl.rubalv.repository.InstallmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class InstallmentServiceImpl implements InstallmentService {
-    private final InstallmentRepository installmentRepository;
 
     @Override
     public List<Installment> generateInstallments(Loan loan, BigDecimal installmentAmount, List<LocalDate> paymentDates) {

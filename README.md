@@ -44,12 +44,13 @@ This project implements a RESTful API for managing customers and loans in a BNPL
 The API follows the OpenAPI 3.0 specification. You can access the documentation in two ways:
 
 1. **OpenAPI Specification**
+
    ```bash
    http://localhost:8080/api-docs
    ```
 2. **Swagger UI**
     ```bash
-    http://localhost:8080/api-docs
+    http://localhost:8080//swagger-ui
     ```
    
 ## Getting started
@@ -74,5 +75,5 @@ The API follows the OpenAPI 3.0 specification. You can access the documentation 
 ```
 
 3. **Access the application**
-    - **API:** ```bash http://localhost:8080/api/v1```
-    - **Swagger UI:** ```bash http://localhost:8080/swagger-ui.html```
+    - **API:** ```bash http://localhost:8080/v1```
+    - **Swagger UI:** ```bash http://localhost:8080/swagger-ui```

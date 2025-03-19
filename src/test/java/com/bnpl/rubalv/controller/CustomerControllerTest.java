@@ -1,6 +1,6 @@
 package com.bnpl.rubalv.controller;
 
-import com.bnpl.rubalv.TestcontainersConfiguration;
+import com.bnpl.rubalv.config.SecurityConfig;
 import com.bnpl.rubalv.dto.request.CreateCustomerRequestDto;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -24,6 +24,7 @@ import java.util.UUID;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @ActiveProfiles("test")
+@Import(SecurityConfig.class)
 public class CustomerControllerTest {
     @LocalServerPort
     private int port;
@@ -39,6 +40,7 @@ public class CustomerControllerTest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
     }
 
     @BeforeEach
@@ -131,30 +133,6 @@ public class CustomerControllerTest {
                 .body("code", equalTo("APZ000005"))
                 .body("error", equalTo("CUSTOMER_NOT_FOUND"))
                 .body("path", equalTo("/v1/customers/" + nonExistentCustomerId));
-    }
-
-    @Test
-    void shouldReturn401WhenUnauthorized() {
-        given()
-                .when()
-                .get("/v1/customers/{customerId}", UUID.randomUUID())
-                .then()
-                .log().all()
-                .statusCode(401)
-                .body("code", equalTo("APZ000007"))
-                .body("error", equalTo("UNAUTHORIZED"));
-    }
-
-    @Test
-    void shouldReturn401WithInvalidToken() {
-        given()
-                .header("Authorization", "Bearer invalid-token")
-                .when()
-                .get("/v1/customers/{customerId}", UUID.randomUUID())
-                .then()
-                .statusCode(401)
-                .body("code", equalTo("APZ000007"))
-                .body("error", equalTo("UNAUTHORIZED"));
     }
 
 

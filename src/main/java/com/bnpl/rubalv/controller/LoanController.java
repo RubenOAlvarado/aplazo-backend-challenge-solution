@@ -99,7 +99,7 @@ public class LoanController {
             @RequestBody LoanRequestDto loanRequestDto
     ){
         LoanResponseDto response = loanService.registerLoan(loanRequestDto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/v1/loans/{loanId}").buildAndExpand(response.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{loanId}").buildAndExpand(response.getId()).toUri();
         return ResponseEntity.created(location).body(response);
     }
 

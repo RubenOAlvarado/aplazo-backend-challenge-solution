@@ -104,13 +104,13 @@ public class CustomerController {
                             examples = @ExampleObject(
                                     name = "Invalid request response",
                                     value = """
-                        {
-                          "code": "APZ000002",
-                          "error": "INVALID_CUSTOMER_REQUEST",
-                          "timestamp": 1739397485,
-                          "message": "Error detail",
-                          "path": "/v1/customers"
-                        }"""
+                                {
+                                  "code": "APZ000002",
+                                  "error": "INVALID_CUSTOMER_REQUEST",
+                                  "timestamp": 1739397485,
+                                  "message": "Error detail",
+                                  "path": "/v1/customers"
+                                }"""
                             )
                     )
             ),
@@ -123,13 +123,13 @@ public class CustomerController {
                             examples = @ExampleObject(
                                     name = "Too many request response",
                                     value = """
-                        {
-                          "code": "APZ000003",
-                          "error": "RATE_LIMIT_ERROR",
-                          "timestamp": 1739397485,
-                          "message": "Error detail",
-                          "path": "/v1/customers"
-                        }"""
+                                    {
+                                      "code": "APZ000003",
+                                      "error": "RATE_LIMIT_ERROR",
+                                      "timestamp": 1739397485,
+                                      "message": "Error detail",
+                                      "path": "/v1/customers"
+                                    }"""
                             )
                     )
             ),
@@ -193,13 +193,13 @@ public class CustomerController {
                             examples = @ExampleObject(
                                     name = "Customer not found response",
                                     value = """
-                        {
-                          "code": "APZ000005",
-                          "error": "CUSTOMER_NOT_FOUND",
-                          "timestamp": 1739397485,
-                          "message": "Error detail",
-                          "path": "/v1/customers/{customerId}"
-                        }"""
+                                    {
+                                      "code": "APZ000005",
+                                      "error": "CUSTOMER_NOT_FOUND",
+                                      "timestamp": 1739397485,
+                                      "message": "Error detail",
+                                      "path": "/v1/customers/{customerId}"
+                                    }"""
                             )
                     )
             ),

@@ -24,7 +24,10 @@ spring:
     active: test
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui
+    oauth:
+      client-secret: bZE9a4hL8m7VqKpXwRtSvY3u6x/AfTjWnOi1cJyN5d0=
+      use-pkce-with-authorization-code-grant: true
 jwt:
   secret: bZE9a4hL8m7VqKpXwRtSvY3u6x/AfTjWnOi1cJyN5d0=
   expiration: 86400
