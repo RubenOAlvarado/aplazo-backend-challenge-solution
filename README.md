@@ -2,6 +2,7 @@
 
 ## Overview
 This project implements a RESTful API for managing customers and loans in a BNPL (Buy Now, Pay Later) system. It provides core functionality for credit line management, loan creation, and payment tracking.
+Feel free to take it as a guide or fork it as your solution. The project follows best practices, design patterns and clean architecture.
 
 ## Key Features
 - **Customer Management**
@@ -77,3 +78,7 @@ The API follows the OpenAPI 3.0 specification. You can access the documentation 
 3. **Access the application**
     - **API:** ```bash http://localhost:8080/v1```
     - **Swagger UI:** ```bash http://localhost:8080/swagger-ui```
+
+### Test coverage
+
+The application currently has around 90% test coverage using test containers and Mockito/JUnit 5. Feel free to increase it as you need.
